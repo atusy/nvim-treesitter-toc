@@ -1,6 +1,7 @@
 local M = {}
 
-M.gather = function(bufnr)
+
+local gather = function(bufnr)
   bufnr = bufnr or 0
   local filetype = vim.fn.getbufvar(bufnr, '&filetype')
   local parser = require("vim.treesitter").get_parser(bufnr, filetype)
@@ -17,25 +18,39 @@ M.gather = function(bufnr)
       )
       start_row, start_col, end_row, end_col = el:child(1):range()
       content = vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, false)[1]
-      table.insert(headings, {lvl, content:sub(start_col + 1):gsub('^%s+', '')})
+      table.insert(
+        headings,
+        {level = lvl, content = content:sub(start_col + 1):gsub('^%s+', '')}
+      )
     end
   end
   return headings
 end
 
-M.create_toc = function(bufnr)
+
+local tocify = function(headings, opts)
+  opts = opts or {}
+  local depth = opts.depth or 0
+  local link = opts.link or 0
+
   local toc = {''}
-  for i, h in pairs(M.gather(bufnr)) do
-    table.insert(toc, string.rep(' ', 4 * h[1] - 4) .. '- ' .. h[2])
+  for _, h in pairs(headings) do
+    if depth == 0 or depth >= h.level then
+      table.insert(toc, string.rep(' ', 4 * h.level - 4) .. '- ' .. h.content)
+    end
   end
   table.insert(toc, '')
   return toc
 end
 
-M.insert_toc = function(bufnr)
-  local n = vim.fn.line('.')
-  local toc = M.create_toc(bufnr)
-  vim.fn.append(n, toc)
+
+M.insert_toc = function(args)
+  args = args or {}
+  args.bufnr = args.bufnr or 0
+  vim.fn.append(
+    vim.fn.line('.'),
+    tocify(gather(args.bufnr), args)
+  )
 end
 
 
