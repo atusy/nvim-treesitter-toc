@@ -12,7 +12,11 @@ Directly run a lua function `require('treesitter-toc').insert_toc()`, or define 
 ``` lua
 vim.api.nvim_create_user_command(
   'Tocify',
-  "require('treesitter-toc').insert_toc()",
+  function(opts)
+    require('treesitter-toc').insert_toc(
+      {depth = opts.count or 0}
+    )
+  end,
   {}
 )
 ```
