@@ -2,8 +2,8 @@ local M = {}
 
 M.gather = function(bufnr)
   bufnr = bufnr or 0
-  local buftype = vim.fn.getbufvar(bufnr, '&buftype')
-  local parser = require("vim.treesitter").get_parser(bufnr, buftype)
+  local filetype = vim.fn.getbufvar(bufnr, '&filetype')
+  local parser = require("vim.treesitter").get_parser(bufnr, filetype)
   local node = parser:parse()[1]:root()
 
   local lvl, start_row, start_col, end_row, end_col, content
